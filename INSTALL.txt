@@ -1,0 +1,12 @@
+HiveTechModeration 1.0.0
+
+1) cd /opt/hivetech/build/hivetech-moderation
+2) chmod +x build.sh
+3) ./build.sh
+4) cp build/libs/HiveTechModeration-1.0.0.jar /opt/hivetech/server/mods/
+5) Запустить сервер один раз, чтобы появился config/hivetech-moderation.cfg
+6) Внести apiUrl/serverCode/token из HiveTech Admin -> Серверы -> Bridge
+7) Перезапустить сервер
+8) В консоли Minecraft: htmod status
+
+Подробности: README.md
