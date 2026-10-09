@@ -10,24 +10,52 @@ if [ -x /usr/lib/jvm/java-8-openjdk-amd64/bin/java ]; then
 fi
 
 echo "[HiveTechModeration] Java:"
-java -version 2>&1 | head -n 1 || true
+java -version 2>&1 | head -n 1
 
-if [ -x "$ROOT/gradlew" ] && [ -f "$ROOT/gradle/wrapper/gradle-wrapper.jar" ]; then
-    GRADLE=("$ROOT/gradlew")
-elif command -v gradle >/dev/null 2>&1; then
-    GRADLE=(gradle)
-else
-    WRAPPER="$(find "$(dirname "$ROOT")" -maxdepth 3 -type f -name gradlew -perm -111 2>/dev/null | grep -v "^$ROOT/gradlew$" | head -n 1 || true)"
-    if [ -z "$WRAPPER" ]; then
-        echo "ERROR: Gradle/gradlew не найден." >&2
-        echo "Положи проект в /opt/hivetech/build/ рядом со старым Forge-проектом или установи Gradle 4.x." >&2
+JAVA_VERSION="$(java -version 2>&1 | awk -F'"' '/version/ {print $2; exit}')"
+case "$JAVA_VERSION" in
+    1.8.*) ;;
+    *)
+        echo "ERROR: Для Forge 1.12.2 используем Java 8, сейчас: $JAVA_VERSION" >&2
+        exit 1
+        ;;
+esac
+
+GRADLE_VERSION="4.10.3"
+TOOLS_ROOT="${HIVETECH_BUILD_TOOLS:-/opt/hivetech/build/.tools}"
+GRADLE_HOME="$TOOLS_ROOT/gradle-$GRADLE_VERSION"
+GRADLE_BIN="$GRADLE_HOME/bin/gradle"
+
+if [ ! -x "$GRADLE_BIN" ]; then
+    mkdir -p "$TOOLS_ROOT"
+    ZIP="$TOOLS_ROOT/gradle-$GRADLE_VERSION-bin.zip"
+    URL="https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip"
+
+    echo "[HiveTechModeration] Gradle $GRADLE_VERSION не найден, устанавливаю в $TOOLS_ROOT"
+
+    if command -v curl >/dev/null 2>&1; then
+        curl -fL --retry 3 --connect-timeout 15 -o "$ZIP" "$URL"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -O "$ZIP" "$URL"
+    else
+        echo "ERROR: Нужен curl или wget для загрузки Gradle $GRADLE_VERSION." >&2
         exit 1
     fi
-    echo "[HiveTechModeration] Использую Gradle wrapper: $WRAPPER"
-    GRADLE=("$WRAPPER" -p "$ROOT")
+
+    if ! command -v unzip >/dev/null 2>&1; then
+        echo "ERROR: Не найден unzip. Установи пакет unzip." >&2
+        exit 1
+    fi
+
+    rm -rf "$GRADLE_HOME"
+    unzip -q "$ZIP" -d "$TOOLS_ROOT"
+    rm -f "$ZIP"
 fi
 
-"${GRADLE[@]}" clean build
+echo "[HiveTechModeration] Gradle:"
+"$GRADLE_BIN" --version | sed -n '1,8p'
+
+"$GRADLE_BIN" --no-daemon clean build
 
 echo
 echo "Готово:"
