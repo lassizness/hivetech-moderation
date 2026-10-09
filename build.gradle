@@ -1,0 +1,56 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        mavenCentral()
+    }
+    dependencies {
+        // Forge 1.12.2-14.23.5.2860 MDK uses ForgeGradle 3.x.
+        // Pinning avoids regressions in later 3.x builds.
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.0.194'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+
+version = '1.0.0'
+group = 'ru.hivetech'
+archivesBaseName = 'HiveTechModeration'
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+compileJava.options.encoding = 'UTF-8'
+
+def forgeVersion = System.getenv('HIVETECH_FORGE_VERSION') ?: '1.12.2-14.23.5.2860'
+
+minecraft {
+    mappings channel: 'stable', version: '39-1.12'
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${forgeVersion}"
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', '1.12.2'
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': project.version, 'mcversion': '1.12.2'
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+            'Implementation-Title': 'HiveTechModeration',
+            'Implementation-Version': project.version,
+            'Implementation-Vendor': 'HiveTech'
+        )
+    }
+}
+
+jar.finalizedBy('reobfJar')
