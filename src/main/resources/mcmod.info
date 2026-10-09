@@ -1,0 +1,11 @@
+[
+  {
+    "modid": "hivetechmoderation",
+    "name": "HiveTech Moderation",
+    "description": "Server-side moderation bridge for HiveTech",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "authorList": ["HiveTech"],
+    "acceptableMinecraftVersions": "[1.12.2]"
+  }
+]
