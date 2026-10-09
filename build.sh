@@ -4,8 +4,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
 
-if [ -x /usr/lib/jvm/java-8-openjdk-amd64/bin/java ]; then
+if [ -x /opt/hivetech/runtime/java8/bin/java ]; then
+    export JAVA_HOME=/opt/hivetech/runtime/java8
+elif [ -x /usr/lib/jvm/java-8-openjdk-amd64/bin/java ]; then
     export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+fi
+
+if [ -n "${JAVA_HOME:-}" ]; then
     export PATH="$JAVA_HOME/bin:$PATH"
 fi
 
